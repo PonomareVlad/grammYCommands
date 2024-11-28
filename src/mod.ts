@@ -4,12 +4,14 @@ class CommandGroup {
     }
 
     addToScope() {
-        return this
+        return this;
     }
 
     setCommands() {
-        return this
+        return this;
     }
 }
 
-export {CommandGroup}
+export const commands = () => () => ({})
+
+export {CommandGroup};
