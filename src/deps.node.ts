@@ -22,4 +22,4 @@ export type {
     LanguageCode,
     MessageEntity
 } from "grammy/types";
-export { LanguageCodes } from "grammy/types";
+export { LanguageCodes } from "grammy";
