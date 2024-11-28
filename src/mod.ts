@@ -1,4 +1,15 @@
-export { Command } from "./command.ts";
-export * from "./command-group.ts";
-export * from "./context.ts";
-export type { CommandOptions } from "./types.ts";
+class CommandGroup {
+    command() {
+        return this;
+    }
+
+    addToScope() {
+        return this
+    }
+
+    setCommands() {
+        return this
+    }
+}
+
+export {CommandGroup}
