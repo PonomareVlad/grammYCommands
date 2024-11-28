@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "grammY Commands Plugin",
   "main": "out/mod.js",
+  "type": "module",
   "scripts": {
     "backport": "deno task backport",
     "prepare": "deno task backport"
