@@ -22,4 +22,5 @@ export type {
     LanguageCode,
     MessageEntity
 } from "grammy/types";
-export { LanguageCodes } from "grammy/types";
+import types from "grammy/types";
+export const { LanguageCodes } = types
