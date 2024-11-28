@@ -2,10 +2,16 @@
   "name": "@grammyjs/commands",
   "version": "1.0.0",
   "description": "grammY Commands Plugin",
-  "browser": "out/mod.js",
-  "module": "out/mod.js",
   "main": "out/mod.js",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./out/mod.d.ts",
+      "node": "./out/mod.js",
+      "browser": "./out/mod.js",
+      "default": "./out/mod.js"
+    }
+  },
   "scripts": {
     "backport": "deno task backport",
     "prepare": "deno task backport"
