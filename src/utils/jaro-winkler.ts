@@ -1,6 +1,6 @@
-import {CommandGroup} from "../command-group.ts";
-import {Context, LanguageCode} from "../deps.deno.ts";
-import type {CommandElementals} from "../types.ts";
+import { CommandGroup } from "../command-group.ts";
+import { Context, LanguageCode, LanguageCodes } from "../deps.deno.ts";
+import type { CommandElementals } from "../types.ts";
 
 export function distance(s1: string, s2: string) {
   if (s1.length === 0 || s2.length === 0) {
@@ -116,7 +116,7 @@ export function JaroWinklerDistance(
 export function isLanguageCode(
   value: string | undefined,
 ): value is LanguageCode {
-  return Object.values({}).includes(value as LanguageCode);
+  return Object.values(LanguageCodes).includes(value as LanguageCode);
 }
 
 export function fuzzyMatch<C extends Context>(
@@ -144,9 +144,9 @@ export function fuzzyMatch<C extends Context>(
       const similarity = JaroWinklerDistance(userInput, command.name, {
         ...options,
       });
-      return similarity > best.similarity ? {command, similarity} : best;
+      return similarity > best.similarity ? { command, similarity } : best;
     },
-    {command: null, similarity: 0},
+    { command: null, similarity: 0 },
   );
 
   return bestMatch.similarity > similarityThreshold ? bestMatch : null;
