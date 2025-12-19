@@ -147,17 +147,15 @@ describe("CommandGroup", () => {
           type: "chat",
           chat_id: 10,
         });
+        // "markme" without handler appears only in default scope (since it has no other scopes)
+        // "test" with handler appears in default scope
+        // When converting to single scope args with chat scope, only commands with that scope appear
         assertEquals(params.commandParams, [
           {
             scope: { type: "chat", chat_id: 10 },
             language_code: undefined,
             commands: [
               { command: "test", description: "handler", hasHandler: true },
-              {
-                command: "markme",
-                description: "nohandler",
-                hasHandler: false,
-              },
             ],
           },
         ]);
@@ -298,10 +296,8 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
+        // Commands without handlers but with addToScope should NOT have default scope
         const expected = [{
-          scope: { type: "default", chat_id: 10 },
-          commands: [{ command: "b" }, { command: "a" }],
-        }, {
           scope: { type: "all_private_chats", chat_id: 10 },
           commands: [{ command: "a" }],
         }, {
@@ -323,16 +319,8 @@ describe("CommandGroup", () => {
           .localize("fr", "b_fr", "group localized");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
+        // Commands without handlers but with addToScope should NOT have default scope
         const expected = [
-          {
-            scope: { type: "default", chat_id: 10 },
-            commands: [{ command: "b" }, { command: "a" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "es",
-            commands: [{ command: "a_es", description: "private localized" }],
-          },
           {
             scope: { type: "all_private_chats", chat_id: 10 },
             commands: [{ command: "a", description: "private chats" }],
@@ -341,11 +329,6 @@ describe("CommandGroup", () => {
             scope: { type: "all_private_chats", chat_id: 10 },
             language_code: "es",
             commands: [{ command: "a_es", description: "private localized" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "fr",
-            commands: [{ command: "b_fr", description: "group localized" }],
           },
           {
             scope: { type: "all_group_chats", chat_id: 10 },

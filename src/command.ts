@@ -156,9 +156,6 @@ export class Command<C extends Context = Context> implements MiddlewareObj<C> {
     this._languages.set("default", { name: name, description });
     if (this._hasHandler) {
       this.addToScope({ type: "default" }, handler);
-    } else {
-      // Add command to default scope without middleware so it appears in setMyCommands
-      this.addToScope({ type: "default" });
     }
     return this;
   }
