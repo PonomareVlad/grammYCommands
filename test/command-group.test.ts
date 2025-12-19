@@ -291,10 +291,9 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
+        // Commands without constructor handlers are not added to the default scope,
+        // only to their explicitly added scopes via addToScope()
         const expected = [{
-          scope: { type: "default", chat_id: 10 },
-          commands: [{ command: "b" }, { command: "a" }],
-        }, {
           scope: { type: "all_private_chats", chat_id: 10 },
           commands: [{ command: "a" }],
         }, {
@@ -316,16 +315,9 @@ describe("CommandGroup", () => {
           .localize("fr", "b_fr", "group localized");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
+        // Commands without constructor handlers are not added to the default scope,
+        // only to their explicitly added scopes via addToScope()
         const expected = [
-          {
-            scope: { type: "default", chat_id: 10 },
-            commands: [{ command: "b" }, { command: "a" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "es",
-            commands: [{ command: "a_es", description: "private localized" }],
-          },
           {
             scope: { type: "all_private_chats", chat_id: 10 },
             commands: [{ command: "a", description: "private chats" }],
@@ -334,11 +326,6 @@ describe("CommandGroup", () => {
             scope: { type: "all_private_chats", chat_id: 10 },
             language_code: "es",
             commands: [{ command: "a_es", description: "private localized" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "fr",
-            commands: [{ command: "b_fr", description: "group localized" }],
           },
           {
             scope: { type: "all_group_chats", chat_id: 10 },
