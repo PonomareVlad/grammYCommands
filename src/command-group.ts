@@ -91,8 +91,7 @@ export class CommandGroup<C extends Context> {
     this._scopes.clear();
 
     this._commands.forEach((command) => {
-      // If command has no scopes (no handler and no addToScope calls), add to default scope
-      // so it still appears in setMyCommands
+      // If command has no scopes, add to default scope so it still appears in setMyCommands
       if (command.scopes.length === 0) {
         this._addCommandToScope({ type: "default" }, command);
       } else {
