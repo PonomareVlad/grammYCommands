@@ -11,7 +11,6 @@ import {
   type LanguageCode,
   type Middleware,
   type MiddlewareObj,
-  type NextFunction,
 } from "./deps.deno.ts";
 import type { BotCommandX, CommandOptions } from "./types.ts";
 import { ensureArray, type MaybeArray } from "./utils/array.ts";
@@ -142,14 +141,15 @@ export class Command<C extends Context = Context> implements MiddlewareObj<C> {
       | Partial<CommandOptions>,
     options?: Partial<CommandOptions>,
   ) {
-    let handler = isMiddleware(handlerOrOptions) ? handlerOrOptions : undefined;
+    const handler = isMiddleware(handlerOrOptions)
+      ? handlerOrOptions
+      : undefined;
 
     options = !handler && isCommandOptions(handlerOrOptions)
       ? handlerOrOptions
       : options;
 
     if (!handler) {
-      handler = async (_ctx: Context, next: NextFunction) => await next();
       this._hasHandler = false;
     } else this._hasHandler = true;
 
@@ -158,6 +158,9 @@ export class Command<C extends Context = Context> implements MiddlewareObj<C> {
     this._languages.set("default", { name: name, description });
     if (this._hasHandler) {
       this.addToScope({ type: "default" }, handler);
+    } else {
+      // Add command to default scope without middleware so it appears in setMyCommands
+      this.addToScope({ type: "default" });
     }
     return this;
   }

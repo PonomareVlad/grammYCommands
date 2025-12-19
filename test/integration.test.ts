@@ -102,7 +102,7 @@ describe("Integration", () => {
     });
     it("should be able to set commands with no handler", async () => {
       const myCommands = new CommandGroup();
-      myCommands.command("command", "super description");
+      myCommands.command("broadcast", "Send broadcast to all users");
 
       const setMyCommandsSpy = spy(resolvesNext([true] as const));
 
@@ -113,6 +113,19 @@ describe("Integration", () => {
       });
 
       assertSpyCalls(setMyCommandsSpy, 1);
+      assertSpyCall(setMyCommandsSpy, 0, {
+        args: [{
+          commands: [{
+            command: "broadcast",
+            description: "Send broadcast to all users",
+            hasHandler: false,
+          }],
+          language_code: undefined,
+          scope: {
+            type: "default",
+          },
+        }],
+      });
     });
   });
 
