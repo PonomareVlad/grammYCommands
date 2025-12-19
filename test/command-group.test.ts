@@ -64,6 +64,171 @@ describe("CommandGroup", () => {
       );
     });
   });
+  describe("scope behavior", () => {
+    it("command without handler and no addToScope should get default scope", () => {
+      // commands.command('broadcast_public', '...')
+      const commands = new CommandGroup();
+      commands.command("broadcast_public", "Public broadcast");
+
+      const result = commands.toArgs();
+      assertEquals(result.scopes.length, 1);
+      assertObjectMatch(result.scopes[0], {
+        scope: { type: "default" },
+        commands: [
+          {
+            command: "broadcast_public",
+            description: "Public broadcast",
+            hasHandler: false,
+          },
+        ],
+      });
+    });
+
+    it("command with handler should get default scope", () => {
+      // commands.command('broadcast_public', '...', handler)
+      const commands = new CommandGroup();
+      commands.command("broadcast_public", "Public broadcast", () => {});
+
+      const result = commands.toArgs();
+      assertEquals(result.scopes.length, 1);
+      assertObjectMatch(result.scopes[0], {
+        scope: { type: "default" },
+        commands: [
+          {
+            command: "broadcast_public",
+            description: "Public broadcast",
+            hasHandler: true,
+          },
+        ],
+      });
+    });
+
+    it("command without handler but with addToScope should NOT get default scope", () => {
+      // commands.command('broadcast_private', '...').addToScope({ type: 'chat', chat_id: 123 })
+      const commands = new CommandGroup();
+      commands.command("broadcast_private", "Private broadcast")
+        .addToScope({ type: "all_private_chats" });
+
+      const result = commands.toArgs();
+      assertEquals(result.scopes.length, 1);
+      assertObjectMatch(result.scopes[0], {
+        scope: { type: "all_private_chats" },
+        commands: [
+          {
+            command: "broadcast_private",
+            description: "Private broadcast",
+            hasHandler: false,
+          },
+        ],
+      });
+    });
+
+    it("command without handler but with addToScope with handler should NOT get default scope", () => {
+      // commands.command('broadcast_private', '...').addToScope({ type: 'chat', chat_id: 123 }, handler)
+      const commands = new CommandGroup();
+      commands.command("broadcast_private", "Private broadcast")
+        .addToScope({ type: "all_private_chats" }, () => {});
+
+      const result = commands.toArgs();
+      assertEquals(result.scopes.length, 1);
+      assertObjectMatch(result.scopes[0], {
+        scope: { type: "all_private_chats" },
+        commands: [
+          {
+            command: "broadcast_private",
+            description: "Private broadcast",
+            hasHandler: false,
+          },
+        ],
+      });
+    });
+
+    it("command with handler and addToScope with handler should get both default and added scope", () => {
+      // commands.command('broadcast_private', '...', handler).addToScope({ type: 'chat', chat_id: 123 }, handler)
+      const commands = new CommandGroup();
+      commands.command("broadcast_both", "Both scopes", () => {})
+        .addToScope({ type: "all_private_chats" }, () => {});
+
+      const result = commands.toArgs();
+      assertEquals(result.scopes.length, 2);
+
+      // Find the default scope
+      const defaultScope = result.scopes.find((s) =>
+        s.scope?.type === "default"
+      );
+      assert(defaultScope !== undefined, "Should have default scope");
+      assertObjectMatch(defaultScope, {
+        scope: { type: "default" },
+        commands: [
+          {
+            command: "broadcast_both",
+            description: "Both scopes",
+            hasHandler: true,
+          },
+        ],
+      });
+
+      // Find the private chats scope
+      const privateScope = result.scopes.find((s) =>
+        s.scope?.type === "all_private_chats"
+      );
+      assert(privateScope !== undefined, "Should have all_private_chats scope");
+      assertObjectMatch(privateScope, {
+        scope: { type: "all_private_chats" },
+        commands: [
+          {
+            command: "broadcast_both",
+            description: "Both scopes",
+            hasHandler: true,
+          },
+        ],
+      });
+    });
+
+    it("multiple commands with different scope configurations", () => {
+      const commands = new CommandGroup();
+      // Command 1: no handler, no addToScope -> default scope
+      commands.command("public", "Public only");
+      // Command 2: with handler -> default scope
+      commands.command("with_handler", "Has handler", () => {});
+      // Command 3: no handler, with addToScope -> only added scope
+      commands.command("private_only", "Private only")
+        .addToScope({ type: "all_private_chats" });
+      // Command 4: with handler, with addToScope -> both scopes
+      commands.command("everywhere", "Everywhere", () => {})
+        .addToScope({ type: "all_group_chats" }, () => {});
+
+      const result = commands.toArgs();
+
+      // Find default scope - should contain: public, with_handler, everywhere
+      const defaultScope = result.scopes.find((s) =>
+        s.scope?.type === "default"
+      );
+      assert(defaultScope !== undefined, "Should have default scope");
+      assertEquals(defaultScope.commands.length, 3);
+      const defaultCommands = defaultScope.commands.map((c) => c.command);
+      assert(defaultCommands.includes("public"));
+      assert(defaultCommands.includes("with_handler"));
+      assert(defaultCommands.includes("everywhere"));
+      assert(!defaultCommands.includes("private_only"));
+
+      // Find private scope - should contain only: private_only
+      const privateScope = result.scopes.find((s) =>
+        s.scope?.type === "all_private_chats"
+      );
+      assert(privateScope !== undefined, "Should have all_private_chats scope");
+      assertEquals(privateScope.commands.length, 1);
+      assertEquals(privateScope.commands[0].command, "private_only");
+
+      // Find group scope - should contain only: everywhere
+      const groupScope = result.scopes.find((s) =>
+        s.scope?.type === "all_group_chats"
+      );
+      assert(groupScope !== undefined, "Should have all_group_chats scope");
+      assertEquals(groupScope.commands.length, 1);
+      assertEquals(groupScope.commands[0].command, "everywhere");
+    });
+  });
   describe("setMyCommands", () => {
     it("should throw if the update has no chat property", () => {
       const ctx = dummyCtx({ noMessage: true });
