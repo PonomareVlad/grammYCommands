@@ -149,9 +149,7 @@ export class Command<C extends Context = Context> implements MiddlewareObj<C> {
       ? handlerOrOptions
       : options;
 
-    if (!handler) {
-      this._hasHandler = false;
-    } else this._hasHandler = true;
+    this._hasHandler = !!handler;
 
     this._options = { ...this._options, ...options };
     if (this._options.prefix?.trim() === "") this._options.prefix = "/";
