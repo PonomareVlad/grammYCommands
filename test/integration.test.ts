@@ -146,7 +146,6 @@ describe("Integration", () => {
       await bot.handleUpdate(getDummyUpdate());
 
       assertSpyCalls(setMyCommandsSpy, 1);
-      // Note: "default" scope does not support chat_id per Telegram Bot API
       assertSpyCall(setMyCommandsSpy, 0, {
         args: [{
           commands: [{

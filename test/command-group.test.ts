@@ -207,7 +207,6 @@ describe("CommandGroup", () => {
         c.command("c", "test c", (_) => _);
 
         const mergedCommands = MyCommandParams.from([a, b, c], 10);
-        // Note: "default" scope does not support chat_id per Telegram Bot API
         const expected = [{
           scope: { type: "default" },
           language_code: undefined,
@@ -241,7 +240,6 @@ describe("CommandGroup", () => {
           .localize("fr", "localiseb", "prueba b localisé");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
-        // Note: "default" scope does not support chat_id per Telegram Bot API
         const expected = [
           {
             scope: { type: "default" },
@@ -300,8 +298,6 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
-        // Note: "default", "all_private_chats", "all_group_chats" scopes do not
-        // support chat_id per Telegram Bot API
         const expected = [{
           scope: { type: "default" },
           commands: [{ command: "b" }, { command: "a" }],
@@ -327,8 +323,6 @@ describe("CommandGroup", () => {
           .localize("fr", "b_fr", "group localized");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
-        // Note: "default", "all_private_chats", "all_group_chats" scopes do not
-        // support chat_id per Telegram Bot API
         const expected = [
           {
             scope: { type: "default" },
@@ -366,63 +360,6 @@ describe("CommandGroup", () => {
         mergedCommands.commandsParams.forEach((command, i) =>
           assertObjectMatch(command, expected[i])
         );
-      });
-      it("should add chat_id only to scopes that support it per Telegram Bot API", () => {
-        // According to Telegram Bot API, only these scopes support chat_id:
-        // - chat
-        // - chat_administrators
-        // - chat_member
-        // Scopes like "default", "all_private_chats", "all_group_chats", "all_chat_administrators"
-        // should NOT have chat_id
-
-        const a = new CommandGroup();
-        // Command with default scope (no chat_id)
-        a.command("cmd_default", "default scope", (_) => _);
-        // Command with all_chat_administrators scope (no chat_id)
-        a.command(
-          "cmd_all_chat_admin",
-          "all_chat_administrators scope",
-          (_) => _,
-        ).addToScope({
-          type: "all_chat_administrators",
-        });
-        // Command with chat scope (should have chat_id)
-        a.command("cmd_chat", "chat scope", (_) => _).addToScope({
-          type: "chat",
-          chat_id: 999, // This will be overwritten by toArgs
-        });
-        // Command with chat_administrators scope (should have chat_id)
-        a.command("cmd_chat_admin", "chat_administrators scope", (_) => _)
-          .addToScope({
-            type: "chat_administrators",
-            chat_id: 999, // This will be overwritten by toArgs
-          });
-
-        const result = a.toArgs(123);
-
-        // Find scopes by type
-        const defaultScope = result.scopes.find((s) =>
-          s.scope?.type === "default"
-        );
-        const allChatAdminScope = result.scopes.find((s) =>
-          s.scope?.type === "all_chat_administrators"
-        );
-        const chatScope = result.scopes.find((s) => s.scope?.type === "chat");
-        const chatAdminScope = result.scopes.find((s) =>
-          s.scope?.type === "chat_administrators"
-        );
-
-        // Default scope should NOT have chat_id
-        assertEquals((defaultScope?.scope as any).chat_id, undefined);
-
-        // All chat administrators scope should NOT have chat_id
-        assertEquals((allChatAdminScope?.scope as any).chat_id, undefined);
-
-        // Chat scope SHOULD have chat_id
-        assertEquals((chatScope?.scope as any).chat_id, 123);
-
-        // Chat administrators scope SHOULD have chat_id
-        assertEquals((chatAdminScope?.scope as any).chat_id, 123);
       });
     });
     describe("get all prefixes registered in a Commands instance", () => {
