@@ -24,6 +24,16 @@ import { JaroWinklerOptions } from "./utils/jaro-winkler.ts";
 import { isCommandOptions, isMiddleware } from "./utils/checks.ts";
 
 /**
+ * Scope types that support the `chat_id` property according to Telegram Bot API.
+ * @see https://core.telegram.org/bots/api#botcommandscope
+ */
+const SCOPES_SUPPORTING_CHAT_ID = [
+  "chat",
+  "chat_administrators",
+  "chat_member",
+] as const;
+
+/**
  * Interface for grouping {@link BotCommand}s that might (or not)
  * be related to each other by scope and/or language.
  */
@@ -194,15 +204,10 @@ export class CommandGroup<C extends Context> {
 
         if (compliantScopedCommands.length) {
           const parsedScope = JSON.parse(scope) as BotCommandScope;
-          // Only add chat_id to scopes that support it according to Telegram Bot API
-          // (chat, chat_administrators, chat_member)
-          const scopesSupportingChatId = [
-            "chat",
-            "chat_administrators",
-            "chat_member",
-          ];
           const shouldAddChatId = chat_id &&
-            scopesSupportingChatId.includes(parsedScope.type);
+            SCOPES_SUPPORTING_CHAT_ID.includes(
+              parsedScope.type as typeof SCOPES_SUPPORTING_CHAT_ID[number],
+            );
           scopes.push({
             scope: shouldAddChatId
               ? { ...parsedScope, chat_id } as BotCommandScope

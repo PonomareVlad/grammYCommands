@@ -378,6 +378,14 @@ describe("CommandGroup", () => {
         const a = new CommandGroup();
         // Command with default scope (no chat_id)
         a.command("cmd_default", "default scope", (_) => _);
+        // Command with all_chat_administrators scope (no chat_id)
+        a.command(
+          "cmd_all_chat_admin",
+          "all_chat_administrators scope",
+          (_) => _,
+        ).addToScope({
+          type: "all_chat_administrators",
+        });
         // Command with chat scope (should have chat_id)
         a.command("cmd_chat", "chat scope", (_) => _).addToScope({
           type: "chat",
@@ -396,6 +404,9 @@ describe("CommandGroup", () => {
         const defaultScope = result.scopes.find((s) =>
           s.scope?.type === "default"
         );
+        const allChatAdminScope = result.scopes.find((s) =>
+          s.scope?.type === "all_chat_administrators"
+        );
         const chatScope = result.scopes.find((s) => s.scope?.type === "chat");
         const chatAdminScope = result.scopes.find((s) =>
           s.scope?.type === "chat_administrators"
@@ -403,6 +414,9 @@ describe("CommandGroup", () => {
 
         // Default scope should NOT have chat_id
         assertEquals((defaultScope?.scope as any).chat_id, undefined);
+
+        // All chat administrators scope should NOT have chat_id
+        assertEquals((allChatAdminScope?.scope as any).chat_id, undefined);
 
         // Chat scope SHOULD have chat_id
         assertEquals((chatScope?.scope as any).chat_id, 123);
