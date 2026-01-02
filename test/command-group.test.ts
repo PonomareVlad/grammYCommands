@@ -538,15 +538,16 @@ describe("CommandGroup", () => {
   });
 
   describe("scope assignment behavior (PR #79)", () => {
-    it("should NOT add command without default handler and no explicit scope to default scope", () => {
+    it("should add command without default handler and no explicit scope to default scope with hasHandler: false", () => {
       // Command without default handler and without explicit scope
-      // should NOT appear in default scope
+      // should appear in default scope (via _populateMetadata fallback)
+      // but with hasHandler: false to indicate there's no handler
       const commands = new CommandGroup();
       commands.command("nohandler", "Command without handler");
 
       const { scopes } = commands.toArgs();
 
-      // The command should be added to default scope by _populateMetadata
+      // The command is added to default scope by _populateMetadata
       // since it has no explicit scopes, but it should have hasHandler: false
       assertEquals(scopes.length, 1);
       assertEquals(scopes[0].scope, { type: "default" });
