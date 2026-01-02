@@ -591,30 +591,31 @@ describe("CommandGroup", () => {
       const params = commands.toArgs();
 
       assertEquals(params.scopes.length, 2);
-      assertObjectMatch(params, {
-        scopes: [
-          {
-            scope: { type: "default" },
-            commands: [
-              {
-                command: "bothscopes",
-                description: "Command with both scopes",
-                hasHandler: true,
-              },
-            ],
-          },
-          {
-            scope: { type: "chat", chat_id: 456 },
-            commands: [
-              {
-                command: "bothscopes",
-                description: "Command with both scopes",
-                hasHandler: true,
-              },
-            ],
-          },
-        ],
-      });
+      const expected = [
+        {
+          scope: { type: "default" },
+          commands: [
+            {
+              command: "bothscopes",
+              description: "Command with both scopes",
+              hasHandler: true,
+            },
+          ],
+        },
+        {
+          scope: { type: "chat", chat_id: 456 },
+          commands: [
+            {
+              command: "bothscopes",
+              description: "Command with both scopes",
+              hasHandler: true,
+            },
+          ],
+        },
+      ];
+      params.scopes.forEach((scope, i) =>
+        assertObjectMatch(scope, expected[i])
+      );
     });
   });
 });
