@@ -148,8 +148,6 @@ describe("CommandGroup", () => {
           type: "chat",
           chat_id: 10,
         });
-        // Note: commands without handlers and without explicit scopes
-        // are not included in toSingleScopeArgs output (see PR #79)
         assertEquals(params.commandParams, [
           {
             scope: { type: "chat", chat_id: 10 },
@@ -296,8 +294,6 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
-        // Note: commands without default handlers are not included in the "default" scope anymore (PR #79)
-        // Only the explicit scopes are retained
         const expected = [{
           scope: { type: "all_private_chats", chat_id: 10 },
           commands: [{ command: "a" }],
@@ -320,8 +316,6 @@ describe("CommandGroup", () => {
           .localize("fr", "b_fr", "group localized");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
-        // Note: commands without default handlers are not included in the "default" scope anymore (PR #79)
-        // Only the explicit scopes are retained
         const expected = [
           {
             scope: { type: "all_private_chats", chat_id: 10 },
@@ -537,18 +531,13 @@ describe("CommandGroup", () => {
     });
   });
 
-  describe("scope assignment behavior (PR #79)", () => {
+  describe("scope assignment behavior", () => {
     it("should add command without default handler and no explicit scope to default scope with hasHandler: false", () => {
-      // Command without default handler and without explicit scope
-      // should appear in default scope (via _populateMetadata fallback)
-      // but with hasHandler: false to indicate there's no handler
       const commands = new CommandGroup();
       commands.command("nohandler", "Command without handler");
 
       const { scopes } = commands.toArgs();
 
-      // The command is added to default scope by _populateMetadata
-      // since it has no explicit scopes, but it should have hasHandler: false
       assertEquals(scopes.length, 1);
       assertEquals(scopes[0].scope, { type: "default" });
       assertEquals(scopes[0].commands, [
@@ -561,7 +550,6 @@ describe("CommandGroup", () => {
     });
 
     it("should add command with default handler to default scope", () => {
-      // Command with default handler should appear in default scope
       const commands = new CommandGroup();
       commands.command("withhandler", "Command with handler", () => {});
 
@@ -579,15 +567,12 @@ describe("CommandGroup", () => {
     });
 
     it("should add command without default handler but with explicit scope to explicit scope only", () => {
-      // Command without default handler but with explicit scope
-      // should appear only in the explicit scope, NOT in default scope
       const commands = new CommandGroup();
       commands.command("explicitonly", "Command with explicit scope only")
         .addToScope({ type: "chat", chat_id: 123 });
 
       const { scopes } = commands.toArgs();
 
-      // Should only have one scope entry for the explicit chat scope
       assertEquals(scopes.length, 1);
       assertEquals(scopes[0].scope, { type: "chat", chat_id: 123 });
       assertEquals(scopes[0].commands, [
@@ -600,21 +585,15 @@ describe("CommandGroup", () => {
     });
 
     it("should add command with default handler and explicit scope to both scopes", () => {
-      // Command with default handler and explicit scope
-      // should appear in both default scope and explicit scope
       const commands = new CommandGroup();
       commands.command("bothscopes", "Command with both scopes", () => {})
         .addToScope({ type: "chat", chat_id: 456 });
 
       const { scopes } = commands.toArgs();
 
-      // Should have two scope entries: default and explicit chat scope
       assertEquals(scopes.length, 2);
 
-      // Find default scope
-      const defaultScope = scopes.find((s) =>
-        JSON.stringify(s.scope) === JSON.stringify({ type: "default" })
-      );
+      const defaultScope = scopes.find((s) => s.scope?.type === "default");
       assertExists(defaultScope);
       assertEquals(defaultScope.commands, [
         {
@@ -624,10 +603,10 @@ describe("CommandGroup", () => {
         },
       ]);
 
-      // Find explicit chat scope
-      const chatScope = scopes.find((s) =>
-        JSON.stringify(s.scope) ===
-          JSON.stringify({ type: "chat", chat_id: 456 })
+      const chatScope = scopes.find(
+        (s) =>
+          s.scope?.type === "chat" &&
+          (s.scope as { type: "chat"; chat_id: number }).chat_id === 456,
       );
       assertExists(chatScope);
       assertEquals(chatScope.commands, [
