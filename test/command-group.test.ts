@@ -593,7 +593,7 @@ describe("CommandGroup", () => {
 
       assertEquals(scopes.length, 2);
 
-      const defaultScope = scopes.find((s) => s.scope?.type === "default");
+      const defaultScope = scopes.find((s) => s.scope!.type === "default");
       assertExists(defaultScope);
       assertEquals(defaultScope.commands, [
         {
@@ -604,9 +604,7 @@ describe("CommandGroup", () => {
       ]);
 
       const chatScope = scopes.find(
-        (s) =>
-          s.scope?.type === "chat" &&
-          (s.scope as { type: "chat"; chat_id: number }).chat_id === 456,
+        (s) => s.scope!.type === "chat" && s.scope!.chat_id === 456,
       );
       assertExists(chatScope);
       assertEquals(chatScope.commands, [
