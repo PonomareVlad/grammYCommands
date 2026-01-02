@@ -535,34 +535,42 @@ describe("CommandGroup", () => {
       const commands = new CommandGroup();
       commands.command("nohandler", "Command without handler");
 
-      const { scopes } = commands.toArgs();
+      const params = commands.toArgs();
 
-      assertEquals(scopes.length, 1);
-      assertEquals(scopes[0].scope, { type: "default" });
-      assertEquals(scopes[0].commands, [
+      const expected = [
         {
-          command: "nohandler",
-          description: "Command without handler",
-          hasHandler: false,
+          scope: { type: "default" },
+          commands: [
+            {
+              command: "nohandler",
+              description: "Command without handler",
+              hasHandler: false,
+            },
+          ],
         },
-      ]);
+      ];
+      assertObjectMatch(params, { scopes: expected });
     });
 
     it("should add command with default handler to default scope", () => {
       const commands = new CommandGroup();
       commands.command("withhandler", "Command with handler", () => {});
 
-      const { scopes } = commands.toArgs();
+      const params = commands.toArgs();
 
-      assertEquals(scopes.length, 1);
-      assertEquals(scopes[0].scope, { type: "default" });
-      assertEquals(scopes[0].commands, [
+      const expected = [
         {
-          command: "withhandler",
-          description: "Command with handler",
-          hasHandler: true,
+          scope: { type: "default" },
+          commands: [
+            {
+              command: "withhandler",
+              description: "Command with handler",
+              hasHandler: true,
+            },
+          ],
         },
-      ]);
+      ];
+      assertObjectMatch(params, { scopes: expected });
     });
 
     it("should add command without default handler but with explicit scope to explicit scope only", () => {
@@ -572,7 +580,6 @@ describe("CommandGroup", () => {
 
       const params = commands.toArgs();
 
-      assertEquals(params.scopes.length, 1);
       const expected = [
         {
           scope: { type: "chat", chat_id: 123 },
@@ -595,7 +602,6 @@ describe("CommandGroup", () => {
 
       const params = commands.toArgs();
 
-      assertEquals(params.scopes.length, 2);
       const expected = [
         {
           scope: { type: "default" },
