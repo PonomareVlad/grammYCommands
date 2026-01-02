@@ -208,7 +208,7 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b, c], 10);
         const expected = [{
-          scope: { type: "default" },
+          scope: { type: "chat", chat_id: 10 },
           language_code: undefined,
           commands: [
             { command: "c", description: "test c" },
@@ -242,7 +242,7 @@ describe("CommandGroup", () => {
         const mergedCommands = MyCommandParams.from([a, b], 10);
         const expected = [
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             language_code: undefined,
             commands: [
               { command: "b", description: "test b" },
@@ -252,7 +252,7 @@ describe("CommandGroup", () => {
             ],
           },
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             language_code: "es",
             commands: [
               {
@@ -268,7 +268,7 @@ describe("CommandGroup", () => {
             ],
           },
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             language_code: "fr",
             commands: [
               {
@@ -299,7 +299,7 @@ describe("CommandGroup", () => {
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
         const expected = [{
-          scope: { type: "default" },
+          scope: { type: "chat", chat_id: 10 },
           commands: [{ command: "b" }, { command: "a" }],
         }, {
           scope: { type: "all_private_chats" },
@@ -325,11 +325,11 @@ describe("CommandGroup", () => {
         const mergedCommands = MyCommandParams.from([a, b], 10);
         const expected = [
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             commands: [{ command: "b" }, { command: "a" }],
           },
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             language_code: "es",
             commands: [{ command: "a_es", description: "private localized" }],
           },
@@ -343,7 +343,7 @@ describe("CommandGroup", () => {
             commands: [{ command: "a_es", description: "private localized" }],
           },
           {
-            scope: { type: "default" },
+            scope: { type: "chat", chat_id: 10 },
             language_code: "fr",
             commands: [{ command: "b_fr", description: "group localized" }],
           },

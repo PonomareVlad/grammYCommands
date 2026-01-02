@@ -24,16 +24,6 @@ import { JaroWinklerOptions } from "./utils/jaro-winkler.ts";
 import { isCommandOptions, isMiddleware } from "./utils/checks.ts";
 
 /**
- * Scope types that support the `chat_id` property according to Telegram Bot API.
- * @see https://core.telegram.org/bots/api#botcommandscope
- */
-const SCOPES_SUPPORTING_CHAT_ID = [
-  "chat",
-  "chat_administrators",
-  "chat_member",
-] as const;
-
-/**
  * Interface for grouping {@link BotCommand}s that might (or not)
  * be related to each other by scope and/or language.
  */
@@ -204,14 +194,24 @@ export class CommandGroup<C extends Context> {
 
         if (compliantScopedCommands.length) {
           const parsedScope = JSON.parse(scope) as BotCommandScope;
-          const shouldAddChatId = chat_id &&
-            SCOPES_SUPPORTING_CHAT_ID.includes(
-              parsedScope.type as typeof SCOPES_SUPPORTING_CHAT_ID[number],
-            );
+          let finalScope: BotCommandScope;
+          if (chat_id != null) {
+            if (parsedScope.type === "default") {
+              finalScope = { type: "chat", chat_id };
+            } else if (
+              ["chat", "chat_administrators", "chat_member"].includes(
+                parsedScope.type,
+              )
+            ) {
+              finalScope = { ...parsedScope, chat_id } as BotCommandScope;
+            } else {
+              finalScope = parsedScope;
+            }
+          } else {
+            finalScope = parsedScope;
+          }
           scopes.push({
-            scope: shouldAddChatId
-              ? { ...parsedScope, chat_id } as BotCommandScope
-              : parsedScope,
+            scope: finalScope,
             language_code: language === "default" ? undefined : language,
             commands: compliantScopedCommands.map((command) =>
               command.toObject(language)
