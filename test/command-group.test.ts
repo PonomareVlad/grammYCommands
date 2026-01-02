@@ -588,33 +588,33 @@ describe("CommandGroup", () => {
       commands.command("bothscopes", "Command with both scopes", () => {})
         .addToScope({ type: "chat", chat_id: 456 });
 
-      const { scopes } = commands.toArgs();
+      const params = commands.toArgs();
 
-      assertEquals(scopes.length, 2);
-
-      const expected = [
-        {
-          scope: { type: "default" },
-          commands: [
-            {
-              command: "bothscopes",
-              description: "Command with both scopes",
-              hasHandler: true,
-            },
-          ],
-        },
-        {
-          scope: { type: "chat", chat_id: 456 },
-          commands: [
-            {
-              command: "bothscopes",
-              description: "Command with both scopes",
-              hasHandler: true,
-            },
-          ],
-        },
-      ];
-      scopes.forEach((scope, i) => assertObjectMatch(scope, expected[i]));
+      assertEquals(params.scopes.length, 2);
+      assertObjectMatch(params, {
+        scopes: [
+          {
+            scope: { type: "default" },
+            commands: [
+              {
+                command: "bothscopes",
+                description: "Command with both scopes",
+                hasHandler: true,
+              },
+            ],
+          },
+          {
+            scope: { type: "chat", chat_id: 456 },
+            commands: [
+              {
+                command: "bothscopes",
+                description: "Command with both scopes",
+                hasHandler: true,
+              },
+            ],
+          },
+        ],
+      });
     });
   });
 });
