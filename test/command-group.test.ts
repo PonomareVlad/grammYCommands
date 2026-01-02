@@ -4,7 +4,6 @@ import { dummyCtx } from "./context.test.ts";
 import {
   assert,
   assertEquals,
-  assertExists,
   assertObjectMatch,
   assertRejects,
   assertThrows,
@@ -593,27 +592,29 @@ describe("CommandGroup", () => {
 
       assertEquals(scopes.length, 2);
 
-      const defaultScope = scopes.find((s) => s.scope!.type === "default");
-      assertExists(defaultScope);
-      assertEquals(defaultScope.commands, [
+      const expected = [
         {
-          command: "bothscopes",
-          description: "Command with both scopes",
-          hasHandler: true,
+          scope: { type: "default" },
+          commands: [
+            {
+              command: "bothscopes",
+              description: "Command with both scopes",
+              hasHandler: true,
+            },
+          ],
         },
-      ]);
-
-      const chatScope = scopes.find(
-        (s) => s.scope!.type === "chat" && s.scope!.chat_id === 456,
-      );
-      assertExists(chatScope);
-      assertEquals(chatScope.commands, [
         {
-          command: "bothscopes",
-          description: "Command with both scopes",
-          hasHandler: true,
+          scope: { type: "chat", chat_id: 456 },
+          commands: [
+            {
+              command: "bothscopes",
+              description: "Command with both scopes",
+              hasHandler: true,
+            },
+          ],
         },
-      ]);
+      ];
+      scopes.forEach((scope, i) => assertObjectMatch(scope, expected[i]));
     });
   });
 });
