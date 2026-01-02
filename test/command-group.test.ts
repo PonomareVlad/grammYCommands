@@ -570,17 +570,22 @@ describe("CommandGroup", () => {
       commands.command("explicitonly", "Command with explicit scope only")
         .addToScope({ type: "chat", chat_id: 123 });
 
-      const { scopes } = commands.toArgs();
+      const params = commands.toArgs();
 
-      assertEquals(scopes.length, 1);
-      assertEquals(scopes[0].scope, { type: "chat", chat_id: 123 });
-      assertEquals(scopes[0].commands, [
+      assertEquals(params.scopes.length, 1);
+      const expected = [
         {
-          command: "explicitonly",
-          description: "Command with explicit scope only",
-          hasHandler: false,
+          scope: { type: "chat", chat_id: 123 },
+          commands: [
+            {
+              command: "explicitonly",
+              description: "Command with explicit scope only",
+              hasHandler: false,
+            },
+          ],
         },
-      ]);
+      ];
+      assertObjectMatch(params, { scopes: expected });
     });
 
     it("should add command with default handler and explicit scope to both scopes", () => {
@@ -613,9 +618,7 @@ describe("CommandGroup", () => {
           ],
         },
       ];
-      params.scopes.forEach((scope, i) =>
-        assertObjectMatch(scope, expected[i])
-      );
+      assertObjectMatch(params, { scopes: expected });
     });
   });
 });
