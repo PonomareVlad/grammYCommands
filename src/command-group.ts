@@ -193,10 +193,20 @@ export class CommandGroup<C extends Context> {
         });
 
         if (compliantScopedCommands.length) {
+          const parsedScope = JSON.parse(scope) as BotCommandScope;
+          // Only add chat_id to scopes that support it according to Telegram Bot API
+          // (chat, chat_administrators, chat_member)
+          const scopesSupportingChatId = [
+            "chat",
+            "chat_administrators",
+            "chat_member",
+          ];
+          const shouldAddChatId = chat_id &&
+            scopesSupportingChatId.includes(parsedScope.type);
           scopes.push({
-            scope: chat_id
-              ? { ...JSON.parse(scope), chat_id }
-              : { ...JSON.parse(scope) },
+            scope: shouldAddChatId
+              ? { ...parsedScope, chat_id } as BotCommandScope
+              : parsedScope,
             language_code: language === "default" ? undefined : language,
             commands: compliantScopedCommands.map((command) =>
               command.toObject(language)
