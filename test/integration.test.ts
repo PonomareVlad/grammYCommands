@@ -100,7 +100,7 @@ describe("Integration", () => {
 
       assertSpyCalls(setMyCommandsSpy, 0);
     });
-    it("should be able to set commands with no handler", async () => {
+    it("should not call setMyCommands when all commands have no handlers", async () => {
       const myCommands = new CommandGroup();
       myCommands.command("command", "super description");
 
@@ -112,7 +112,39 @@ describe("Integration", () => {
         } as unknown as Api,
       });
 
+      // Commands without handlers are not added to any scope,
+      // so setMyCommands should not be called
+      assertSpyCalls(setMyCommandsSpy, 0);
+    });
+
+    it("should only set commands that have handlers", async () => {
+      const myCommands = new CommandGroup();
+      myCommands.command("broadcast", "Send broadcast to all users"); // No handler
+      myCommands.command("start", "Start the bot", (_, next) => next()); // Has handler
+
+      const setMyCommandsSpy = spy(resolvesNext([true] as const));
+
+      await myCommands.setCommands({
+        api: {
+          raw: { setMyCommands: setMyCommandsSpy },
+        } as unknown as Api,
+      });
+
+      // Only the command with a handler should be set
       assertSpyCalls(setMyCommandsSpy, 1);
+      assertSpyCall(setMyCommandsSpy, 0, {
+        args: [{
+          commands: [{
+            command: "start",
+            description: "Start the bot",
+            hasHandler: true,
+          }],
+          language_code: undefined,
+          scope: {
+            type: "default",
+          },
+        }],
+      });
     });
   });
 

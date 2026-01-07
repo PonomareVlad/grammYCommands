@@ -13,19 +13,16 @@ import {
 
 describe("CommandGroup", () => {
   describe("command", () => {
-    it("should create a command with no handlers", () => {
+    it("should create a command with no handlers and not add it to any scope", () => {
       const commands = new CommandGroup();
       commands.command("test", "no handler");
 
-      assertObjectMatch(commands.toArgs().scopes[0], {
-        commands: [
-          {
-            command: "test",
-            description: "no handler",
-            hasHandler: false,
-          },
-        ],
-      });
+      // Commands without handlers are not added to any scope
+      assertEquals(commands.toArgs().scopes.length, 0);
+
+      // But the command is still registered in the commands array
+      assertEquals(commands.commands.length, 1);
+      assertEquals(commands.commands[0].hasHandler, false);
     });
 
     it("should create a command with a default handler", () => {
@@ -139,7 +136,7 @@ describe("CommandGroup", () => {
           assertObjectMatch(command, expected[i])
         );
       });
-      it("should mark commands with no handler", () => {
+      it("should only include commands with handlers in toSingleScopeArgs", () => {
         const commands = new CommandGroup();
         commands.command("test", "handler", (_) => _);
         commands.command("markme", "nohandler");
@@ -147,17 +144,13 @@ describe("CommandGroup", () => {
           type: "chat",
           chat_id: 10,
         });
+        // Only the command with a handler should be included
         assertEquals(params.commandParams, [
           {
             scope: { type: "chat", chat_id: 10 },
             language_code: undefined,
             commands: [
               { command: "test", description: "handler", hasHandler: true },
-              {
-                command: "markme",
-                description: "nohandler",
-                hasHandler: false,
-              },
             ],
           },
         ]);
@@ -298,10 +291,9 @@ describe("CommandGroup", () => {
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
 
+        // Commands without constructor handlers are not added to the default scope,
+        // only to their explicitly added scopes via addToScope()
         const expected = [{
-          scope: { type: "default", chat_id: 10 },
-          commands: [{ command: "b" }, { command: "a" }],
-        }, {
           scope: { type: "all_private_chats", chat_id: 10 },
           commands: [{ command: "a" }],
         }, {
@@ -323,16 +315,9 @@ describe("CommandGroup", () => {
           .localize("fr", "b_fr", "group localized");
 
         const mergedCommands = MyCommandParams.from([a, b], 10);
+        // Commands without constructor handlers are not added to the default scope,
+        // only to their explicitly added scopes via addToScope()
         const expected = [
-          {
-            scope: { type: "default", chat_id: 10 },
-            commands: [{ command: "b" }, { command: "a" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "es",
-            commands: [{ command: "a_es", description: "private localized" }],
-          },
           {
             scope: { type: "all_private_chats", chat_id: 10 },
             commands: [{ command: "a", description: "private chats" }],
@@ -341,11 +326,6 @@ describe("CommandGroup", () => {
             scope: { type: "all_private_chats", chat_id: 10 },
             language_code: "es",
             commands: [{ command: "a_es", description: "private localized" }],
-          },
-          {
-            scope: { type: "default", chat_id: 10 },
-            language_code: "fr",
-            commands: [{ command: "b_fr", description: "group localized" }],
           },
           {
             scope: { type: "all_group_chats", chat_id: 10 },
